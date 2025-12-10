@@ -15,8 +15,8 @@ Table users {
   last_name varchar(25)
   country_code char(3)
   user_role role [not null]
-  created_at timestamp [default: `now()`]
-  is_active bool [default: true]
+  created_at timestamp [default: `now()`, note: "with zone"]
+  is_active bool [default: true, not null]
   password_hash varchar(255) [not null]
 }
 
@@ -24,7 +24,7 @@ Table users {
 
 Table restaurants {
   restaurant_id int [pk, increment]
-  restaurant_name varchar
+  restaurant_name varchar [not null]
   address varchar [not null]
   is_active bool [not null, default: true]
   is_open bool [not null, default: false]
@@ -42,29 +42,29 @@ Enum measure_unit {
 
 Table dishes {
   dish_id int [pk, increment]
-  restaurant_id int [ref: > restaurants.restaurant_id] 
-  dish_name varchar
+  restaurant_id int [not null, ref: > restaurants.restaurant_id] 
+  dish_name varchar [not null]
   price decimal(10,2) [not null]
 }
 
 Table ingredients {
   ingredient_id varchar [pk]
-  ingredient_name varchar
+  ingredient_name varchar [not null]
 }
 
 Table inventories {
   inventory_id int [pk, increment]
-  restaurant_id int [ref: > restaurants.restaurant_id]
-  ingredient_id varchar [ref: > ingredients.ingredient_id]
+  restaurant_id int [not null, ref: > restaurants.restaurant_id]
+  ingredient_id varchar [not null, ref: > ingredients.ingredient_id]
   stock decimal(10,3) [not null, note: "CHECK (stock >= 0)"]
   unit measure_unit [not null]
-  price decimal (10,2) [not null]
+  price decimal (10,2) [not null, note: "CHECK (price >= 0)"]
   expiration_date date
 }
 
 Table needed_ingredients {
-  dish_id int [ref: > dishes.dish_id]
-  ingredient_id varchar [ref: > ingredients.ingredient_id]
+  dish_id int [not null, ref: > dishes.dish_id]
+  ingredient_id varchar [not null, ref: > ingredients.ingredient_id]
   needed_quantity decimal (10,2) [not null]
   
   unit measure_unit [not null] 
@@ -78,7 +78,7 @@ Table needed_ingredients {
 
 Table lost_inventories {
   lost_id int [pk, increment]
-  inventory_id int [ref: > inventories.inventory_id]
+  inventory_id int [not null, ref: > inventories.inventory_id]
   quantity decimal(10,3) [not null]
   
   unit measure_unit [not null] 
@@ -98,16 +98,16 @@ Enum order_status {
 
 Table orders {
   order_id int [pk, increment]
-  user_id int [ref: > users.user_id]
-  restaurant_id int [ref: > restaurants.restaurant_id]
+  user_id int [not null, ref: > users.user_id]
+  restaurant_id int [not null, ref: > restaurants.restaurant_id]
   created_at timestamp [default: `now()`]
   status order_status [not null, default: 'received']
 }
 
 Table order_items {
   order_item_id int [pk, increment]
-  order_id int [ref: > orders.order_id]
-  dish_id int [ref: > dishes.dish_id]
+  order_id int [not null, ref: > orders.order_id]
+  dish_id int [not null, ref: > dishes.dish_id]
   
 
   quantity int [not null, default: 1]
@@ -132,10 +132,10 @@ Enum payment_method {
 
 Table payments {
   payment_id int [pk, increment]
-  user_id int [ref: > users.user_id]
-  order_id int [ref: > orders.order_id]
+  user_id int [not null, ref: > users.user_id]
+  order_id int [not null, ref: > orders.order_id]
   amount decimal(10,2) [not null]
-  currency char(3) [default: "USD"]
+  currency char(3) [not null, default: "USD"]
   status payment_status [not null]
   method payment_method [not null]
   created_at timestamp [default: `now()`]
