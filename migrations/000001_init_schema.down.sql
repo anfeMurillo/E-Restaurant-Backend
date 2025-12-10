@@ -1,4 +1,4 @@
--- Necesito borrar las tablas con foreing key --
+-- Necesito borrar las tablas con foreign key --
 
 drop table if exists payments;
 drop table if exists order_items;
@@ -7,7 +7,7 @@ drop table if exists lost_inventories;
 drop table if exists needed_ingredients;
 drop table if exists inventories;
 
--- Ahora borrar las tables bases q no tienen foreing keys --
+-- Ahora borrar las tables bases q no tienen foreign keys --
 
 drop table if exists ingredients;
 drop table if exists dishes;

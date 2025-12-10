@@ -54,8 +54,9 @@ create table ingredients (
     "ingredient_name" varchar not null
 );
 
--- Esto es como crea un politica en mi base de datos
-create domain "non_negative_number" as numeric
+-- Esto es como crea un política en mi base de datos
+
+create domain non_negative_number as numeric
 check ( value >= 0 );
 
 create table inventories (
@@ -68,7 +69,7 @@ create table inventories (
     "expiration_date" date,
 
     foreign key (restaurant_id) references restaurants(restaurant_id),
-    foreign key (ingredient_id) references ingredients(ingredient_id, ingredient_name)
+    foreign key (ingredient_id) references ingredients(ingredient_id)
 );
 
 create table needed_ingredients (
