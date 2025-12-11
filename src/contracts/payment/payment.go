@@ -6,11 +6,11 @@ import (
 )
 
 type Repository interface {
-	CreatePayment(payment.Payment)
+	Create(payment.Payment)
 
-	GetPaymentById(paymentId int)
+	GetById(paymentId int)
 
-	UpdatePaymentStatus(paymentId int, status paymentstatus.PaymentStatus)
+	UpdateStatus(paymentId int, status paymentstatus.PaymentStatus)
 
-	UpdatePaymentMethod(paymentId int, method paymentstatus.PaymentMethod)
+	UpdateMethod(paymentId int, method paymentstatus.PaymentMethod)
 }
