@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Documentation - public</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --table-border: #e0e0e0;
+            --table-header-bg: #f5f5f5;
+            --code-bg: #f8f8f8;
+            --link-color: #007acc;
+            --card-bg: #ffffff;
+            --card-hover: #f0f0f0;
+            --sidebar-bg: #f3f3f3;
+            --sidebar-border: #e0e0e0;
+            --sidebar-hover: #e8e8e8;
+            --sidebar-active: #d0d0d0;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1e1e1e;
+                --text-color: #d4d4d4;
+                --table-border: #333333;
+                --table-header-bg: #2d2d2d;
+                --code-bg: #2d2d2d;
+                --link-color: #3794ff;
+                --card-bg: #252526;
+                --card-hover: #2d2d2d;
+                --sidebar-bg: #252526;
+                --sidebar-border: #333333;
+                --sidebar-hover: #2a2d2e;
+                --sidebar-active: #37373d;
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 300px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--sidebar-border);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            max-width: 100%;
+        }
+
+        /* Sidebar Styles */
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--sidebar-border);
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--sidebar-border);
+            border-radius: 4px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+        }
+
+        .group-by {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        .schema-item {
+            user-select: none;
+        }
+
+        .schema-title {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .schema-title:hover {
+            background-color: var(--sidebar-hover);
+        }
+
+        .arrow {
+            font-size: 0.8rem;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .arrow.expanded {
+            transform: rotate(90deg);
+        }
+
+        .table-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: none;
+        }
+        
+        .table-list.expanded {
+            display: block;
+        }
+
+        .table-list li a {
+            display: flex;
+            align-items: center;
+            padding: 0.4rem 1rem 0.4rem 2.5rem;
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .table-list li a:hover {
+            background-color: var(--sidebar-hover);
+            text-decoration: none;
+        }
+        
+        .icon {
+            margin-right: 0.5rem;
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+        }
+
+        h1, h2, h3 {
+            color: var(--text-color);
+            margin-top: 0;
+        }
+
+        a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .project-section {
+            margin-bottom: 4rem;
+            border-bottom: 2px solid var(--table-border);
+            padding-bottom: 2rem;
+        }
+
+        .stats-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            background-color: var(--code-bg);
+            border: 1px solid var(--table-border);
+            border-radius: 8px;
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
+            gap: 2rem;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+        }
+
+        .stat-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        .stat-divider {
+            width: 1px;
+            height: 2rem;
+            background-color: var(--table-border);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background-color: var(--table-header-bg);
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            border: 1px solid var(--table-border);
+        }
+
+        .project-note, .table-note {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .project-note h1, .project-note h2, .project-note h3 {
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .project-note ul, .table-note ul {
+            padding-left: 1.5rem;
+        }
+
+        .table-section {
+            margin-bottom: 3rem;
+            border: 1px solid var(--table-border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            scroll-margin-top: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--table-border);
+        }
+
+        th {
+            background-color: var(--table-header-bg);
+            font-weight: 600;
+        }
+
+        code {
+            background-color: var(--code-bg);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 0.9em;
+        }
+
+        .schema-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .schema-card {
+            display: block;
+            background-color: var(--card-bg);
+            border: 1px solid var(--table-border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .schema-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-decoration: none;
+            background-color: var(--card-hover);
+        }
+
+        .schema-name {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+
+        .schema-stats {
+            font-size: 0.9rem;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        .schema-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--table-border);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+    </style>
+    <script>
+        function toggleSchema(element) {
+            const list = element.nextElementSibling;
+            const arrow = element.querySelector('.arrow');
+            
+            if (list.style.display === 'none' || !list.style.display) {
+                list.style.display = 'block';
+                arrow.classList.add('expanded');
+            } else {
+                list.style.display = 'none';
+                arrow.classList.remove('expanded');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const term = e.target.value.toLowerCase();
+                    const schemas = document.querySelectorAll('.schema-item');
+                    
+                    schemas.forEach(schema => {
+                        let hasVisibleTables = false;
+                        const tables = schema.querySelectorAll('li');
+                        tables.forEach(table => {
+                            const text = table.textContent.toLowerCase();
+                            if (text.includes(term)) {
+                                table.style.display = 'block';
+                                hasVisibleTables = true;
+                            } else {
+                                table.style.display = 'none';
+                            }
+                        });
+                        
+                        if (hasVisibleTables || term === '') {
+                            schema.style.display = 'block';
+                            if (term !== '') {
+                                schema.querySelector('.table-list').style.display = 'block';
+                                schema.querySelector('.arrow').classList.add('expanded');
+                            }
+                        } else {
+                            schema.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            // Handle table links to center the element
+            const tableLinks = document.querySelectorAll('.table-link');
+            tableLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const href = link.getAttribute('href');
+                    if (href && href.includes('#')) {
+                        const targetId = href.split('#')[1];
+                        const targetElement = document.getElementById(targetId);
+                        if (targetElement) {
+                            targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            // Update URL without jumping
+                            history.pushState(null, null, href);
+                        } else {
+                            // If element is not on this page (e.g. different schema), navigate normally
+                            window.location.href = href;
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <div class="search-box">
+                        <input type="text" placeholder="Search for tables..." id="searchInput">
+                    </div>
+                    <div class="group-by">
+                        <span>Group by: Schemas</span>
+                    </div>
+                </div>
+                <div class="sidebar-content">
+        
+                <div class="schema-item">
+                    <div class="schema-title" onclick="toggleSchema(this)">
+                        <span class="arrow expanded">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M5 3l14 9-14 9V3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                        <span class="name">public</span>
+                    </div>
+                    <ul class="table-list" style="display: block;">
+            
+                    <li>
+                        <a href="schema_public.html#table-users" class="table-link">
+                            <span class="icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 6H3.01919M3.01919 6H20.9809M3.01919 6C3 6.31438 3 6.70191 3 7.2002V16.8002C3 17.9203 3 18.4796 3.21799 18.9074C3.40973 19.2837 3.71547 19.5905 4.0918 19.7822C4.51921 20 5.079 20 6.19694 20L17.8031 20C18.921 20 19.48 20 19.9074 19.7822C20.2837 19.5905 20.5905 19.2837 20.7822 18.9074C21 18.48 21 17.921 21 16.8031L21 7.19691C21 6.70021 21 6.31368 20.9809 6M3.01919 6C3.04314 5.60768 3.09697 5.3293 3.21799 5.0918C3.40973 4.71547 3.71547 4.40973 4.0918 4.21799C4.51962 4 5.08009 4 6.2002 4H17.8002C18.9203 4 19.4796 4 19.9074 4.21799C20.2837 4.40973 20.5905 4.71547 20.7822 5.0918C20.9032 5.3293 20.957 5.60768 20.9809 6M20.9809 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            users
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="schema_public.html#table-restaurants" class="table-link">
+                            <span class="icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 6H3.01919M3.01919 6H20.9809M3.01919 6C3 6.31438 3 6.70191 3 7.2002V16.8002C3 17.9203 3 18.4796 3.21799 18.9074C3.40973 19.2837 3.71547 19.5905 4.0918 19.7822C4.51921 20 5.079 20 6.19694 20L17.8031 20C18.921 20 19.48 20 19.9074 19.7822C20.2837 19.5905 20.5905 19.2837 20.7822 18.9074C21 18.48 21 17.921 21 16.8031L21 7.19691C21 6.70021 21 6.31368 20.9809 6M3.01919 6C3.04314 5.60768 3.09697 5.3293 3.21799 5.0918C3.40973 4.71547 3.71547 4.40973 4.0918 4.21799C4.51962 4 5.08009 4 6.2002 4H17.8002C18.9203 4 19.4796 4 19.9074 4.21799C20.2837 4.40973 20.5905 4.71547 20.7822 5.0918C20.9032 5.3293 20.957 5.60768 20.9809 6M20.9809 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            restaurants
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="schema_public.html#table-restaurant_staff" class="table-link">
+                            <span class="icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 6H3.01919M3.01919 6H20.9809M3.01919 6C3 6.31438 3 6.70191 3 7.2002V16.8002C3 17.9203 3 18.4796 3.21799 18.9074C3.40973 19.2837 3.71547 19.5905 4.0918 19.7822C4.51921 20 5.079 20 6.19694 20L17.8031 20C18.921 20 19.48 20 19.9074 19.7822C20.2837 19.5905 20.5905 19.2837 20.7822 18.9074C21 18.48 21 17.921 21 16.8031L21 7.19691C21 6.70021 21 6.31368 20.9809 6M3.01919 6C3.04314 5.60768 3.09697 5.3293 3.21799 5.0918C3.40973 4.71547 3.71547 4.40973 4.0918 4.21799C4.51962 4 5.08009 4 6.2002 4H17.8002C18.9203 4 19.4796 4 19.9074 4.21799C20.2837 4.40973 20.5905 4.71547 20.7822 5.0918C20.9032 5.3293 20.957 5.60768 20.9809 6M20.9809 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            restaurant_staff
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="schema_public.html#table-dishes" class="table-link">
+                            <span class="icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 6H3.01919M3.01919 6H20.9809M3.01919 6C3 6.31438 3 6.70191 3 7.2002V16.8002C3 17.9203 3 18.4796 3.21799 18.9074C3.40973 19.2837 3.71547 19.5905 4.0918 19.7822C4.51921 20 5.079 20 6.19694 20L17.8031 20C18.921 20 19.48 20 19.9074 19.7822C20.2837 19.5905 20.5905 19.2837 20.7822 18.9074C21 18.48 21 17.921 21 16.8031L21 7.19691C21 6.70021 21 6.31368 20.9809 6M3.01919 6C3.04314 5.60768 3.09697 5.3293 3.21799 5.0918C3.40973 4.71547 3.71547 4.40973 4.0918 4.21799C4.51962 4 5.08009 4 6.2002 4H17.8002C18.9203 4 19.4796 4 19.9074 4.21799C20.2837 4.40973 20.5905 4.71547 20.7822 5.0918C20.9032 5.3293 20.957 5.60768 20.9809 6M20.9809 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            dishes
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="schema_public.html#table-ingredients" class="table-link">
+                            <span class="icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 6H3.01919M3.01919 6H20.9809M3.01919 6C3 6.31438 3 6.70191 3 7.2002V16.8002C3 17.9203 3 18.4796 3.21799 18.9074C3.40973 19.2837 3.71547 19.5905 4.0918 19.7822C4.51921 20 5.079 20 6.19694 20L17.8031 20C18.921 20 19.48 20 19.9074 19.7822C20.2837 19.5905 20.5905 19.2837 20.7822 18.9074C21 18.48 21 17.921 21 16.8031L21 7.19691C21 6.70021 21 6.31368 20.9809 6M3.01919 6C3.04314 5.60768 3.09697 5.3293 3.21799 5.0918C3.40973 4.71547 3.71547 4.40973 4.0918 4.21799C4.51962 4 5.08009 4 6.2002 4H17.8002C18.9203 4 19.4796 4 19.9074 4.21799C20.2837 4.40973 20.5905 4.71547 20.7822 5.0918C20.9032 5.3293 20.957 5.60768 20.9809 6M20.9809 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            ingredients
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="schema_public.html#table-inventories" class="table-link">
+                            <span class="icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 6H3.01919M3.01919 6H20.9809M3.01919 6C3 6.31438 3 6.70191 3 7.2002V16.8002C3 17.9203 3 18.4796 3.21799 18.9074C3.40973 19.2837 3.71547 19.5905 4.0918 19.7822C4.51921 20 5.079 20 6.19694 20L17.8031 20C18.921 20 19.48 20 19.9074 19.7822C20.2837 19.5905 20.5905 19.2837 20.7822 18.9074C21 18.48 21 17.921 21 16.8031L21 7.19691C21 6.70021 21 6.31368 20.9809 6M3.01919 6C3.04314 5.60768 3.09697 5.3293 3.21799 5.0918C3.40973 4.71547 3.71547 4.40973 4.0918 4.21799C4.51962 4 5.08009 4 6.2002 4H17.8002C18.9203 4 19.4796 4 19.9074 4.21799C20.2837 4.40973 20.5905 4.71547 20.7822 5.0918C20.9032 5.3293 20.957 5.60768 20.9809 6M20.9809 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            inventories
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="schema_public.html#table-needed_ingredients" class="table-link">
+                            <span class="icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 6H3.01919M3.01919 6H20.9809M3.01919 6C3 6.31438 3 6.70191 3 7.2002V16.8002C3 17.9203 3 18.4796 3.21799 18.9074C3.40973 19.2837 3.71547 19.5905 4.0918 19.7822C4.51921 20 5.079 20 6.19694 20L17.8031 20C18.921 20 19.48 20 19.9074 19.7822C20.2837 19.5905 20.5905 19.2837 20.7822 18.9074C21 18.48 21 17.921 21 16.8031L21 7.19691C21 6.70021 21 6.31368 20.9809 6M3.01919 6C3.04314 5.60768 3.09697 5.3293 3.21799 5.0918C3.40973 4.71547 3.71547 4.40973 4.0918 4.21799C4.51962 4 5.08009 4 6.2002 4H17.8002C18.9203 4 19.4796 4 19.9074 4.21799C20.2837 4.40973 20.5905 4.71547 20.7822 5.0918C20.9032 5.3293 20.957 5.60768 20.9809 6M20.9809 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            needed_ingredients
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="schema_public.html#table-lost_inventories" class="table-link">
+                            <span class="icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 6H3.01919M3.01919 6H20.9809M3.01919 6C3 6.31438 3 6.70191 3 7.2002V16.8002C3 17.9203 3 18.4796 3.21799 18.9074C3.40973 19.2837 3.71547 19.5905 4.0918 19.7822C4.51921 20 5.079 20 6.19694 20L17.8031 20C18.921 20 19.48 20 19.9074 19.7822C20.2837 19.5905 20.5905 19.2837 20.7822 18.9074C21 18.48 21 17.921 21 16.8031L21 7.19691C21 6.70021 21 6.31368 20.9809 6M3.01919 6C3.04314 5.60768 3.09697 5.3293 3.21799 5.0918C3.40973 4.71547 3.71547 4.40973 4.0918 4.21799C4.51962 4 5.08009 4 6.2002 4H17.8002C18.9203 4 19.4796 4 19.9074 4.21799C20.2837 4.40973 20.5905 4.71547 20.7822 5.0918C20.9032 5.3293 20.957 5.60768 20.9809 6M20.9809 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            lost_inventories
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="schema_public.html#table-orders" class="table-link">
+                            <span class="icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 6H3.01919M3.01919 6H20.9809M3.01919 6C3 6.31438 3 6.70191 3 7.2002V16.8002C3 17.9203 3 18.4796 3.21799 18.9074C3.40973 19.2837 3.71547 19.5905 4.0918 19.7822C4.51921 20 5.079 20 6.19694 20L17.8031 20C18.921 20 19.48 20 19.9074 19.7822C20.2837 19.5905 20.5905 19.2837 20.7822 18.9074C21 18.48 21 17.921 21 16.8031L21 7.19691C21 6.70021 21 6.31368 20.9809 6M3.01919 6C3.04314 5.60768 3.09697 5.3293 3.21799 5.0918C3.40973 4.71547 3.71547 4.40973 4.0918 4.21799C4.51962 4 5.08009 4 6.2002 4H17.8002C18.9203 4 19.4796 4 19.9074 4.21799C20.2837 4.40973 20.5905 4.71547 20.7822 5.0918C20.9032 5.3293 20.957 5.60768 20.9809 6M20.9809 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            orders
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="schema_public.html#table-order_items" class="table-link">
+                            <span class="icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 6H3.01919M3.01919 6H20.9809M3.01919 6C3 6.31438 3 6.70191 3 7.2002V16.8002C3 17.9203 3 18.4796 3.21799 18.9074C3.40973 19.2837 3.71547 19.5905 4.0918 19.7822C4.51921 20 5.079 20 6.19694 20L17.8031 20C18.921 20 19.48 20 19.9074 19.7822C20.2837 19.5905 20.5905 19.2837 20.7822 18.9074C21 18.48 21 17.921 21 16.8031L21 7.19691C21 6.70021 21 6.31368 20.9809 6M3.01919 6C3.04314 5.60768 3.09697 5.3293 3.21799 5.0918C3.40973 4.71547 3.71547 4.40973 4.0918 4.21799C4.51962 4 5.08009 4 6.2002 4H17.8002C18.9203 4 19.4796 4 19.9074 4.21799C20.2837 4.40973 20.5905 4.71547 20.7822 5.0918C20.9032 5.3293 20.957 5.60768 20.9809 6M20.9809 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            order_items
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="schema_public.html#table-payments" class="table-link">
+                            <span class="icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 6H3.01919M3.01919 6H20.9809M3.01919 6C3 6.31438 3 6.70191 3 7.2002V16.8002C3 17.9203 3 18.4796 3.21799 18.9074C3.40973 19.2837 3.71547 19.5905 4.0918 19.7822C4.51921 20 5.079 20 6.19694 20L17.8031 20C18.921 20 19.48 20 19.9074 19.7822C20.2837 19.5905 20.5905 19.2837 20.7822 18.9074C21 18.48 21 17.921 21 16.8031L21 7.19691C21 6.70021 21 6.31368 20.9809 6M3.01919 6C3.04314 5.60768 3.09697 5.3293 3.21799 5.0918C3.40973 4.71547 3.71547 4.40973 4.0918 4.21799C4.51962 4 5.08009 4 6.2002 4H17.8002C18.9203 4 19.4796 4 19.9074 4.21799C20.2837 4.40973 20.5905 4.71547 20.7822 5.0918C20.9032 5.3293 20.957 5.60768 20.9809 6M20.9809 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            payments
+                        </a>
+                    </li>
+                
+                    </ul>
+                </div>
+            
+                </div>
+            </div>
+        
+    <div class="main-content">
+        <div class="schema-header">
+            <a href="index.html" class="back-link">← Back to Schemas</a>
+            <h1>Schema: public</h1>
+        </div>
+                <div class="table-section" id="table-users">
+                    <h2>users</h2>
+                    <div class="table-note"></div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Attributes</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                    <tr>
+                        <td>user_id</td>
+                        <td>int</td>
+                        <td>PK</td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>user_name</td>
+                        <td>varchar(25)</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>email</td>
+                        <td>varchar</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>first_name</td>
+                        <td>varchar(25)</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>last_name</td>
+                        <td>varchar(25)</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>country_code</td>
+                        <td>char(3)</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>user_role</td>
+                        <td>role</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>created_at</td>
+                        <td>timestamp</td>
+                        <td></td>
+                        <td>with zone</td>
+                    </tr>
+                
+                    <tr>
+                        <td>is_active</td>
+                        <td>bool</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>password_hash</td>
+                        <td>varchar(255)</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                        </tbody>
+                    </table>
+                </div>
+            
+                <div class="table-section" id="table-restaurants">
+                    <h2>restaurants</h2>
+                    <div class="table-note"></div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Attributes</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                    <tr>
+                        <td>restaurant_id</td>
+                        <td>int</td>
+                        <td>PK</td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>restaurant_name</td>
+                        <td>varchar</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>address</td>
+                        <td>varchar</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>is_active</td>
+                        <td>bool</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>is_open</td>
+                        <td>bool</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                        </tbody>
+                    </table>
+                </div>
+            
+                <div class="table-section" id="table-restaurant_staff">
+                    <h2>restaurant_staff</h2>
+                    <div class="table-note"></div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Attributes</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                    <tr>
+                        <td>restaurant_id</td>
+                        <td>int</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>user_id</td>
+                        <td>int</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                        </tbody>
+                    </table>
+                </div>
+            
+                <div class="table-section" id="table-dishes">
+                    <h2>dishes</h2>
+                    <div class="table-note"></div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Attributes</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                    <tr>
+                        <td>dish_id</td>
+                        <td>int</td>
+                        <td>PK</td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>restaurant_id</td>
+                        <td>int</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>dish_name</td>
+                        <td>varchar</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>price</td>
+                        <td>decimal(10,2)</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                        </tbody>
+                    </table>
+                </div>
+            
+                <div class="table-section" id="table-ingredients">
+                    <h2>ingredients</h2>
+                    <div class="table-note"></div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Attributes</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                    <tr>
+                        <td>ingredient_id</td>
+                        <td>varchar</td>
+                        <td>PK</td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>ingredient_name</td>
+                        <td>varchar</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>price</td>
+                        <td>decimal(10,2)</td>
+                        <td></td>
+                        <td>CHECK (price >= 0)</td>
+                    </tr>
+                
+                        </tbody>
+                    </table>
+                </div>
+            
+                <div class="table-section" id="table-inventories">
+                    <h2>inventories</h2>
+                    <div class="table-note"></div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Attributes</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                    <tr>
+                        <td>inventory_id</td>
+                        <td>int</td>
+                        <td>PK</td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>restaurant_id</td>
+                        <td>int</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>ingredient_id</td>
+                        <td>varchar</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>stock</td>
+                        <td>decimal(10,3)</td>
+                        <td></td>
+                        <td>CHECK (stock >= 0)</td>
+                    </tr>
+                
+                    <tr>
+                        <td>unit</td>
+                        <td>measure_unit</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>expiration_date</td>
+                        <td>date</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                        </tbody>
+                    </table>
+                </div>
+            
+                <div class="table-section" id="table-needed_ingredients">
+                    <h2>needed_ingredients</h2>
+                    <div class="table-note"></div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Attributes</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                    <tr>
+                        <td>dish_id</td>
+                        <td>int</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>ingredient_id</td>
+                        <td>varchar</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>needed_quantity</td>
+                        <td>decimal(10,2)</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>unit</td>
+                        <td>measure_unit</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>is_optional</td>
+                        <td>bool</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                        </tbody>
+                    </table>
+                </div>
+            
+                <div class="table-section" id="table-lost_inventories">
+                    <h2>lost_inventories</h2>
+                    <div class="table-note"></div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Attributes</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                    <tr>
+                        <td>lost_id</td>
+                        <td>int</td>
+                        <td>PK</td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>inventory_id</td>
+                        <td>int</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>quantity</td>
+                        <td>decimal(10,3)</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>unit</td>
+                        <td>measure_unit</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>unit_price</td>
+                        <td>decimal(10,2)</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>date_event</td>
+                        <td>timestamp</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                        </tbody>
+                    </table>
+                </div>
+            
+                <div class="table-section" id="table-orders">
+                    <h2>orders</h2>
+                    <div class="table-note"></div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Attributes</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                    <tr>
+                        <td>order_id</td>
+                        <td>int</td>
+                        <td>PK</td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>user_id</td>
+                        <td>int</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>restaurant_id</td>
+                        <td>int</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>created_at</td>
+                        <td>timestamp</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>status</td>
+                        <td>order_status</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                        </tbody>
+                    </table>
+                </div>
+            
+                <div class="table-section" id="table-order_items">
+                    <h2>order_items</h2>
+                    <div class="table-note"></div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Attributes</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                    <tr>
+                        <td>order_item_id</td>
+                        <td>int</td>
+                        <td>PK</td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>order_id</td>
+                        <td>int</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>dish_id</td>
+                        <td>int</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>quantity</td>
+                        <td>int</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>price_at_moment</td>
+                        <td>decimal(10,2)</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                        </tbody>
+                    </table>
+                </div>
+            
+                <div class="table-section" id="table-payments">
+                    <h2>payments</h2>
+                    <div class="table-note"></div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Attributes</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                    <tr>
+                        <td>payment_id</td>
+                        <td>int</td>
+                        <td>PK</td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>user_id</td>
+                        <td>int</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>order_id</td>
+                        <td>int</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>amount</td>
+                        <td>decimal(10,2)</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>currency</td>
+                        <td>char(3)</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>status</td>
+                        <td>payment_status</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>method</td>
+                        <td>payment_method</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>created_at</td>
+                        <td>timestamp</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                        </tbody>
+                    </table>
+                </div>
+            
+    </div>
+</body>
+</html>
