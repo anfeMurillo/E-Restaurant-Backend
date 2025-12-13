@@ -8,7 +8,7 @@ import (
 )
 
 type Repository interface {
-	Create(ctx context.Context, inventory *inventory.Inventory) (inventory.Inventory, error)
+	Create(ctx context.Context, inventory *inventory.Inventory) (*inventory.Inventory, error)
 
 	AddStock(ctx context.Context, quantity float64, unit measure.Measure, expitationDate time.Time) error
 
