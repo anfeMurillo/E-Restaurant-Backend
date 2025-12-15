@@ -59,7 +59,7 @@ create table dishes (
 );
 
 create table ingredients (
-    "ingredient_id" varchar primary key ,
+    "ingredient_id" serial primary key ,
     "ingredient_name" varchar not null ,
     "price" non_negative_number not null ,
 );
