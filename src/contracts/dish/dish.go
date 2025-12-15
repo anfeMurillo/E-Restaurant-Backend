@@ -10,6 +10,8 @@ type Repository interface {
 
 	GetById(ctx context.Context, dishId int) (*dish.Dish, error)
 
+	GetByRestaurant(ctx context.Context, restaurantId int) (*dish.Dish, error)
+
 	GetAll(ctx context.Context) ([]*dish.Dish, error)
 
 	Delete(ctx context.Context, dishId int) error
