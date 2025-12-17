@@ -16,13 +16,13 @@ type Repository interface {
 
 	GetByRestaurant(ctx context.Context, restaurantId int) ([]*inventory.Inventory, error)
 
-	AddStock(ctx context.Context, quantity float64, unit measure.Measure, expitationDate time.Time) error
+	AddStock(ctx context.Context, inventoryId int, quantity float64, expitationDate time.Time) error
 
-	RemoveStock(ctx context.Context, quantity float64, unit measure.Measure) (string, error)
+	RemoveStock(ctx context.Context, inventoryId int, quantity float64, unit measure.Measure) error
 
-	UpdateUnit(ctx context.Context, InventoryId int, unit measure.Measure) error
+	UpdateUnit(ctx context.Context, inventoryId int, unit measure.Measure) error
 
-	UpdateExpitationDate(ctx context.Context, InventoryId int, expirationDate time.Time) error
+	UpdateExpitationDate(ctx context.Context, inventoryId int, expirationDate time.Time) error
 
 	Delete(ctx context.Context, inventoryId int) error
 }
